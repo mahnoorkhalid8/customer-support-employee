@@ -1,0 +1,76 @@
+# =============================================================================
+# MINIMAL REQUIREMENTS - Windows Compatible (Pre-built Wheels)
+# =============================================================================
+# Use this file if you're on Windows and don't have Visual Studio Build Tools
+# For full functionality, use Docker or install on Linux
+
+# Core Framework
+fastapi==0.109.0
+uvicorn[standard]==0.27.0
+pydantic==2.5.3
+pydantic-settings==2.1.0
+
+# OpenAI
+openai==1.12.0
+
+# Database (use Docker for PostgreSQL instead of local install)
+sqlalchemy==2.0.25
+alembic==1.13.1
+
+# HTTP Client
+httpx==0.26.0
+
+# Gmail Integration
+google-auth==2.27.0
+google-auth-oauthlib==1.2.0
+google-auth-httplib2==0.2.0
+google-api-python-client==2.116.0
+
+# Twilio (WhatsApp)
+twilio==8.12.0
+
+# Utilities
+python-dotenv==1.0.1
+python-multipart==0.0.6
+python-jose[cryptography]==3.3.0
+
+# Validation
+email-validator==2.1.0
+phonenumbers==8.13.29
+
+# Logging
+structlog==24.1.0
+
+# Testing
+pytest==8.0.0
+pytest-asyncio==0.23.4
+
+# Development
+black==24.1.1
+isort==5.13.2
+
+# Date/Time
+python-dateutil==2.8.2
+pytz==2024.1
+
+# Security
+cryptography==42.0.2
+
+# JSON Schema
+jsonschema==4.21.1
+
+# UUID
+shortuuid==1.0.11
+
+# Type hints
+typing-extensions==4.9.0
+
+# =============================================================================
+# OPTIONAL - Install these if you have Visual Studio Build Tools
+# =============================================================================
+# asyncpg==0.29.0          # PostgreSQL async driver (use Docker instead)
+# psycopg2-binary==2.9.9   # PostgreSQL driver (use Docker instead)
+# aiokafka==0.10.0         # Kafka client (use Docker instead)
+# pandas==2.2.0            # Data processing (optional)
+# numpy==1.26.3            # Numerical computing (optional)
+# aiohttp==3.9.3           # Async HTTP (optional)

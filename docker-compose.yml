@@ -1,0 +1,156 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database (CRM System)
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: fte-postgres  
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-fte_db}
+      POSTGRES_USER: ${POSTGRES_USER:-fte_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-your_secure_password_here}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./production/database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fte_user -d fte_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      
+    networks:
+      - fte-network
+
+  # Zookeeper (for Kafka)
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: fte-zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+    networks:
+      - fte-network
+
+  # Kafka (Event Streaming)
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: fte-kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+      - "9093:9093"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092,PLAINTEXT_INTERNAL://kafka:9093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT_INTERNAL
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    healthcheck:
+      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+    networks:
+      - fte-network
+
+  # Redis (Optional - for caching)
+  redis:
+    image: redis:7-alpine
+    container_name: fte-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - fte-network
+
+  # FastAPI Application
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fte-api
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=development
+      - DATABASE_URL=postgresql://fte_user:your_secure_password_here@postgres:5432/fte_db
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9093
+      - REDIS_HOST=redis
+    env_file:
+      - .env
+    volumes:
+      - ./production:/app/production
+      - ./logs:/app/logs
+      - ./credentials:/app/credentials
+    command: uvicorn production.api.main:app --host 0.0.0.0 --port 8000 --reload
+    networks:
+      - fte-network
+
+  # Message Processor Worker
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fte-worker
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    environment:
+      - ENVIRONMENT=development
+      - DATABASE_URL=postgresql://fte_user:your_secure_password_here@postgres:5432/fte_db
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9093
+      - REDIS_HOST=redis
+    env_file:
+      - .env
+    volumes:
+      - ./production:/app/production
+      - ./logs:/app/logs
+      - ./credentials:/app/credentials
+    command: python production/workers/message_processor.py
+    networks:
+      - fte-network
+
+  # Web Form (Next.js) - Commented out until frontend is implemented
+  # web-form:
+  #   build:
+  #     context: ./src/web-form
+  #     dockerfile: Dockerfile
+  #   container_name: fte-web-form
+  #   ports:
+  #     - "3000:3000"
+  #   environment:
+  #     - NEXT_PUBLIC_API_URL=http://localhost:8000
+  #   volumes:
+  #     - ./src/web-form:/app
+  #     - /app/node_modules
+  #   command: npm run dev
+  #   networks:
+  #     - fte-network
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  fte-network:
+    driver: bridge
