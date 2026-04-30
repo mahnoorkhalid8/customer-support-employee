@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 interface ActivityItem {
   id: string;
@@ -54,7 +54,7 @@ const mockActivities: ActivityItem[] = [
 ];
 
 const Activity = () => {
-  const [activities, setActivities] = useState<ActivityItem[]>(mockActivities);
+  const [activities] = useState<ActivityItem[]>(mockActivities);
   const [filter, setFilter] = useState<'all' | 'email' | 'whatsapp'>('all');
   const [searchTerm, setSearchTerm] = useState('');
 
