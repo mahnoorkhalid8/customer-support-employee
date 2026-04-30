@@ -5,8 +5,7 @@ This module provides a wrapper around Google's Gemini API.
 """
 
 import os
-from google import genai
-from google.genai import types
+import google.generativeai as genai
 import logging
 
 logger = logging.getLogger(__name__)
@@ -24,10 +23,10 @@ def get_gemini_client():
     if not api_key:
         raise ValueError("GEMINI_API_KEY environment variable not set")
 
-    client = genai.Client(api_key=api_key)
+    genai.configure(api_key=api_key)
 
     logger.info(f"Gemini client initialized with model: {get_model_name()}")
-    return client
+    return genai
 
 
 def get_model_name() -> str:
