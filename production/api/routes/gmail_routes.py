@@ -6,6 +6,7 @@ from fastapi import APIRouter, HTTPException, BackgroundTasks
 from pydantic import BaseModel
 from typing import Optional
 import logging
+import os
 
 from production.integrations.gmail.gmail_client import GmailClient
 from production.ai.customer_support import CustomerSupportAI
@@ -18,7 +19,17 @@ router = APIRouter(prefix="/gmail", tags=["gmail"])
 _gmail_client = None
 _ai_service = None
 
+def check_gmail_enabled():
+    """Check if Gmail integration is enabled"""
+    enabled = os.getenv("GMAIL_ENABLED", "false").lower() == "true"
+    if not enabled:
+        raise HTTPException(
+            status_code=503,
+            detail="Gmail integration is disabled. Set GMAIL_ENABLED=true to enable."
+        )
+
 def get_gmail_client():
+    check_gmail_enabled()
     global _gmail_client
     if _gmail_client is None:
         _gmail_client = GmailClient()
@@ -62,6 +73,7 @@ async def check_emails(background_tasks: BackgroundTasks):
     Manually trigger email check
     Useful for testing and polling
     """
+    check_gmail_enabled()
     background_tasks.add_task(process_new_emails)
     return {"status": "checking emails"}
 
