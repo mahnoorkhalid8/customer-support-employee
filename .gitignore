@@ -43,7 +43,8 @@ ENV/
 credentials/
 *.json
 !package.json
-!tsconfig.json
+!package-lock.json
+!tsconfig*.json
 gmail_credentials.json
 gmail_token.json
 
