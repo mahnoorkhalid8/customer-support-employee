@@ -33,6 +33,15 @@ async def lifespan(app: FastAPI):
     # Startup
     logger.info("Starting Customer Success FTE API...")
 
+    # Setup Gmail credentials from environment (for HF Spaces deployment)
+    if os.getenv("GMAIL_ENABLED", "false").lower() == "true":
+        try:
+            from production.integrations.gmail.setup_credentials import setup_gmail_credentials, setup_gmail_token
+            setup_gmail_credentials()
+            setup_gmail_token()
+        except Exception as e:
+            logger.warning(f"Gmail credentials setup failed: {e}")
+
     # Initialize database only if configured
     db_url = os.getenv("DATABASE_URL")
     if db_url and not db_url.startswith("postgresql://user:password"):
