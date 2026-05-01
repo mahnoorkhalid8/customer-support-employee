@@ -14,6 +14,10 @@ class CustomerSupportAI:
             from production.gemini_client import get_gemini_client, get_model_name
             self.client = get_gemini_client()
             self.model = get_model_name()
+        elif self.provider == "huggingface":
+            from production.hf_client import get_hf_client, get_model_name
+            self.client = get_hf_client()
+            self.model = get_model_name()
         else:
             from production.grok_client import get_grok_client, get_model_name
             self.client = get_grok_client()
@@ -67,6 +71,38 @@ class CustomerSupportAI:
                 model = self.client.GenerativeModel(self.model)
                 response = model.generate_content(full_prompt)
                 return response.text
+
+            elif self.provider == "huggingface":
+                # Hugging Face Inference API
+                messages = [{"role": "system", "content": system_prompt}]
+
+                # Add conversation history
+                if conversation_history:
+                    messages.extend(conversation_history)
+
+                # Add context
+                if context:
+                    context_str = self._format_context(context)
+                    messages.append({
+                        "role": "system",
+                        "content": f"Additional context: {context_str}"
+                    })
+
+                # Add current message
+                messages.append({
+                    "role": "user",
+                    "content": customer_message
+                })
+
+                # Use HF Inference API
+                response = self.client.chat_completion(
+                    messages=messages,
+                    model=self.model,
+                    temperature=0.7,
+                    max_tokens=500 if channel == "whatsapp" else 1000
+                )
+
+                return response.choices[0].message.content
 
             else:
                 # OpenAI/Grok API
