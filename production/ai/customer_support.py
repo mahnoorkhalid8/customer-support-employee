@@ -73,36 +73,36 @@ class CustomerSupportAI:
                 return response.text
 
             elif self.provider == "huggingface":
-                # Hugging Face Inference API
-                messages = [{"role": "system", "content": system_prompt}]
-
-                # Add conversation history
-                if conversation_history:
-                    messages.extend(conversation_history)
+                # Hugging Face Inference API - use text_generation
+                # Build a single prompt from messages
+                prompt_parts = [system_prompt]
 
                 # Add context
                 if context:
                     context_str = self._format_context(context)
-                    messages.append({
-                        "role": "system",
-                        "content": f"Additional context: {context_str}"
-                    })
+                    prompt_parts.append(f"Additional context: {context_str}")
+
+                # Add conversation history
+                if conversation_history:
+                    for msg in conversation_history:
+                        prompt_parts.append(f"{msg['role']}: {msg['content']}")
 
                 # Add current message
-                messages.append({
-                    "role": "user",
-                    "content": customer_message
-                })
+                prompt_parts.append(f"User: {customer_message}")
+                prompt_parts.append("Assistant:")
 
-                # Use HF Inference API - correct method
-                response = self.client.chat_completion(
-                    messages=messages,
+                full_prompt = "\n\n".join(prompt_parts)
+
+                # Use text_generation instead of chat_completion
+                response = self.client.text_generation(
+                    prompt=full_prompt,
                     model=self.model,
+                    max_new_tokens=500 if channel == "whatsapp" else 1000,
                     temperature=0.7,
-                    max_tokens=500 if channel == "whatsapp" else 1000
+                    return_full_text=False
                 )
 
-                return response.choices[0].message.content
+                return response
 
             else:
                 # OpenAI/Grok API
