@@ -32,6 +32,9 @@ google-auth-httplib2==0.2.0
 google-api-python-client==2.116.0
 google-cloud-pubsub==2.19.0
 
+# Gemini AI Integration
+google-generativeai==0.8.3
+
 # Twilio (WhatsApp)
 twilio==8.12.0
 
@@ -125,4 +128,3 @@ tenacity==8.2.3
 
 # Type hints
 typing-extensions==4.9.0
-google-generativeai==0.8.3
