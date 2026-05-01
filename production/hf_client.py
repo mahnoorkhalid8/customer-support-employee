@@ -33,8 +33,8 @@ def get_hf_client() -> InferenceClient:
 
 def get_model_name() -> str:
     """Get the HF model name from environment."""
-    # Default to Llama 3.2 3B - free and fast
-    return os.getenv("HF_MODEL", "meta-llama/Llama-3.2-3B-Instruct")
+    # Default to Mistral 7B Instruct - free and works without API key
+    return os.getenv("HF_MODEL", "mistralai/Mistral-7B-Instruct-v0.2")
 
 
 def get_max_tokens() -> int:

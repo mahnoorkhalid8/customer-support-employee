@@ -94,10 +94,10 @@ class CustomerSupportAI:
                     "content": customer_message
                 })
 
-                # Use HF Inference API - correct method name
-                response = self.client.chat.completions.create(
-                    model=self.model,
+                # Use HF Inference API - correct method
+                response = self.client.chat_completion(
                     messages=messages,
+                    model=self.model,
                     temperature=0.7,
                     max_tokens=500 if channel == "whatsapp" else 1000
                 )
