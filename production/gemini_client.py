@@ -5,8 +5,20 @@ This module provides a wrapper around Google's Gemini API.
 """
 
 import os
-import google.generativeai as genai
 import logging
+
+# Import with explicit error handling for namespace package issues
+try:
+    import google.generativeai as genai
+except ImportError as e:
+    # Fallback: try importing the module directly
+    import sys
+    import importlib.util
+    spec = importlib.util.find_spec("google.generativeai")
+    if spec is None:
+        raise ImportError(f"google-generativeai package not found. Install with: pip install google-generativeai") from e
+    genai = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(genai)
 
 logger = logging.getLogger(__name__)
 
