@@ -6,36 +6,31 @@ with OpenAI's interface.
 """
 
 import os
-from openai import OpenAI
+from groq import Groq
 import logging
 
 logger = logging.getLogger(__name__)
 
 
-def get_grok_client() -> OpenAI:
+def get_grok_client() -> Groq:
     """
-    Get configured Grok API client.
-
-    Grok API is compatible with OpenAI's SDK, so we use the OpenAI client
-    with a custom base URL.
+    Get configured Grok API client using official Groq SDK.
 
     Returns:
-        OpenAI client configured for Grok API
+        Groq client configured for API access
     """
     api_key = os.getenv("GROK_API_KEY")
-    base_url = os.getenv("GROK_BASE_URL", "https://api.x.ai/v1")
 
     if not api_key:
         raise ValueError("GROK_API_KEY environment variable not set")
 
-    client = OpenAI(
+    client = Groq(
         api_key=api_key,
-        base_url=base_url,
         timeout=30.0,  # 30 second timeout
         max_retries=2  # Retry up to 2 times
     )
 
-    logger.info(f"Grok client initialized with base URL: {base_url}")
+    logger.info(f"Grok client initialized with official Groq SDK")
     return client
 
 
