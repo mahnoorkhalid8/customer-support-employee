@@ -63,11 +63,9 @@ class CustomerSupportAI:
 
                 full_prompt = "\n\n".join(prompt_parts)
 
-                # Use the new API
-                response = self.client.models.generate_content(
-                    model=self.model,
-                    contents=full_prompt
-                )
+                # Use the correct Gemini API
+                model = self.client.GenerativeModel(self.model)
+                response = model.generate_content(full_prompt)
                 return response.text
 
             else:
