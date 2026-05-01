@@ -30,7 +30,9 @@ def get_grok_client() -> OpenAI:
 
     client = OpenAI(
         api_key=api_key,
-        base_url=base_url
+        base_url=base_url,
+        timeout=30.0,  # 30 second timeout
+        max_retries=2  # Retry up to 2 times
     )
 
     logger.info(f"Grok client initialized with base URL: {base_url}")
