@@ -45,6 +45,7 @@ credentials/
 !package.json
 !package-lock.json
 !tsconfig*.json
+!vercel.json
 gmail_credentials.json
 gmail_token.json
 
